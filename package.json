@@ -1,0 +1,29 @@
+{
+  "name": "RestFF_Server",
+  "version": "1.0.0",
+  "description": "The server for the RestaurantFF application",
+  "scripts": {
+    "build": "babel src -d lib && node lib/index",
+    "setup-db": "mongod --bind_ip=$IP --nojournal"
+  },
+  "main": "lib/index.js",
+  "author": "Carlo",
+  "license": "MIT",
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-plugin-transform-object-rest-spread": "^6.26.0",
+    "babel-preset-env": "^1.7.0"
+  },
+  "dependencies": {
+    "apollo-server-express": "^2.0.0",
+    "babel-polyfill": "^6.26.0",
+    "bcrypt-nodejs": "^0.0.3",
+    "body-parser": "^1.18.3",
+    "express": "^4.16.3",
+    "express-jwt": "^5.3.1",
+    "graphql": "^0.13.2",
+    "graphql-date": "^1.0.3",
+    "jsonwebtoken": "^8.3.0",
+    "mongoose": "^5.2.6"
+  }
+}
