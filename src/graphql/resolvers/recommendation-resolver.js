@@ -5,6 +5,7 @@ import { requireAuth } from "../../services/auth";
 
 export default {
     createRecommendation: async (_, {restaurant, body}, {user}) => {
+        await requireAuth(user);
         try {
             //check if the recommendation is a valid restaurant in the local db
             const found = await Restaurant.findById({_id: restaurant})
@@ -27,6 +28,7 @@ export default {
     },
     
     getRecommendations : async (_, args, {user}) => {
+        await requireAuth(user);
         try {
             return Recommendation.find({})
         }catch (err){
@@ -35,6 +37,7 @@ export default {
     },
     
     deleteRecommendation: async (_, {_id}, {user}) => {
+        await requireAuth(user);
         try {
             return Recommendation.deleteOne({_id})
         } catch (err){
@@ -43,10 +46,12 @@ export default {
     },
     
     getRestaurants: async (_, {location}, user) => {
+        await requireAuth(user);
         
     },
     
     getNearbyRecommendations: async (_, {location}, user) => {
+        await requireAuth(user);
         
     }
 }

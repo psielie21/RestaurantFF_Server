@@ -4,7 +4,9 @@
   "description": "The server for the RestaurantFF application",
   "scripts": {
     "build": "babel src -d lib && node lib/index",
-    "setup-db": "mongod --bind_ip=$IP --nojournal"
+    "setup-db": "mongod --bind_ip=$IP --nojournal",
+    "repair-db" : "mongod --bind_ip=$IP --nojournal --repair",
+    "test": "JUNIT_REPORT_PATH=test-result/result.xml JUNIT_REPORT_STACK=1 mocha --timeout 25000 --colors --reporter mocha-jenkins-reporter || true"
   },
   "main": "lib/index.js",
   "author": "Carlo",
@@ -12,7 +14,10 @@
   "devDependencies": {
     "babel-cli": "^6.26.0",
     "babel-plugin-transform-object-rest-spread": "^6.26.0",
-    "babel-preset-env": "^1.7.0"
+    "babel-preset-env": "^1.7.0",
+    "chai": "^4.1.2",
+    "mocha": "^5.2.0",
+    "supertest": "^3.1.0"
   },
   "dependencies": {
     "apollo-server-express": "^2.0.0",
@@ -21,6 +26,7 @@
     "body-parser": "^1.18.3",
     "express": "^4.16.3",
     "express-jwt": "^5.3.1",
+    "geo-distance": "^0.2.0",
     "graphql": "^0.13.2",
     "graphql-date": "^1.0.3",
     "jsonwebtoken": "^8.3.0",

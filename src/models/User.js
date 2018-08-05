@@ -7,12 +7,19 @@ import constants from "../config/constants";
 const UserSchema = mongoose.Schema({
     username: {
         type: String,
-        unique: true
+        unique: true,
+        required: true
     },
-    password: String,
+    password: {
+        type: String,
+        required: true
+        },
     firstName: String,
     lastName: String,
-    email: String,
+    email: {
+        type: String,
+        required: true
+        },
     avatar: String,
     recs: [{
         type: mongoose.Schema.Types.ObjectId,

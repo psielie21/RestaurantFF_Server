@@ -4,13 +4,12 @@ import constants from "../config/constants";
 import User from "../models/User";
 
 export async function requireAuth(user){
-    console.log(user)
     if(!user || !user._id){
         throw new Error("Unauthorized");
     }
 
-    const me = User.findById(user._id);
-
+    const me = await User.findById(user._id);
+    console.log(me)
     if(!me){
         throw new Error("Unathorized");
     }
@@ -18,16 +17,19 @@ export async function requireAuth(user){
     return me
 }
 
-/*
-deprecated - using express-jwt now
+
 export async function decodeToken(token){
-    const arr = token.split(" ");
+    try {
+        const arr = token.split(" ");
     
-    if(arr[0] == "Bearer"){
-        return(jwt.verify(arr[1], constants.JWT_SECRET));
+        if(arr[0] == "Bearer"){
+            return(jwt.verify(arr[1], constants.JWT_SECRET));
+        }
+    } catch (err){
+        throw err;
     }
+    
     
     throw new Error("Token not valid!") 
 }
 
-*/

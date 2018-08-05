@@ -45,6 +45,7 @@ export default {
     
     //it is required that one of them is not null
     userProfile: async(_, {email, username}, {user}) => {
+        await requireAuth(user);
         try {
             if(email){
                 return User.findOne({email})
@@ -57,6 +58,7 @@ export default {
     },
     
     users: async (_, args, {user}) => {
+        await requireAuth(user);
         try {
             const users = User.find( {} )
             return users;
@@ -66,6 +68,7 @@ export default {
     },
     
     deleteUsers: async (_, args, {user}) => {
+        await requireAuth(user);
         try {
             await User.collection.drop();
             return User.find({})

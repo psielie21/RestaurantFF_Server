@@ -2,6 +2,7 @@ import Restaurant from "../../models/Restaurant";
 
 export default {
     addRestaurant: async (_, {...rest}, {user}) => {
+        await requireAuth(user);
         try {
             const r = await Restaurant.create({...rest})
             return r;
