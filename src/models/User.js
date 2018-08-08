@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import {hashSync, compareSync} from "bcrypt-nodejs";
 import jwt from "jsonwebtoken";
+import validator from "mongoose-unique-validator";
 
 import constants from "../config/constants";
 
@@ -8,6 +9,7 @@ const UserSchema = mongoose.Schema({
     username: {
         type: String,
         unique: true,
+        dropDups: true,
         required: true
     },
     password: {
@@ -48,4 +50,13 @@ UserSchema.methods = {
     }
 }
 
-export default mongoose.model("User", UserSchema);
+UserSchema.plugin(validator);
+
+
+const mod = mongoose.model("User", UserSchema);
+
+mod.on('index', function (err) {
+  if (err) console.error(err);
+})
+
+export default mod;

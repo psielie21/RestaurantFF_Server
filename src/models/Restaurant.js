@@ -3,7 +3,8 @@ import mongoose from "mongoose";
 const RestaurantSchema = mongoose.Schema({
     name: String,
     type: String,
-    coords: [String],
+    location: {type: {type: String},
+               coordinates: [Number]},
     phone: String,
     thirdPartyId: String,
     website: String,
@@ -14,5 +15,13 @@ const RestaurantSchema = mongoose.Schema({
     
 });
 
-export default mongoose.model("Restaurant", RestaurantSchema);
+RestaurantSchema.index({ location: "2dsphere" });
+
+const restm = mongoose.model("Restaurant", RestaurantSchema);
+
+restm.on('index', function (err) {
+  if (err) console.error(err);
+})
+
+export default restm;
 

@@ -1,6 +1,6 @@
 export default {
   PORT: process.env.PORT || 8080,
-  DB_URL: "mongodb://localhost/rffserver",
+  DB_URL: "mongodb://localhost:27017/rffserver",
   GRAPHQL_PATH: "/graphql",
   JWT_SECRET: "thisisasecret",
 }

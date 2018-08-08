@@ -9,9 +9,8 @@ export async function requireAuth(user){
     }
 
     const me = await User.findById(user._id);
-    console.log(me)
     if(!me){
-        throw new Error("Unathorized");
+        throw new Error("Unauthorized");
     }
     
     return me

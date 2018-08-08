@@ -6,8 +6,8 @@ export default`
     }
     
     type Location {
-        lat: String!
-        lon: String!
+        lat: Int!
+        lon: Int!
     }
     
     type User {
@@ -25,11 +25,15 @@ export default`
     type Restaurant {
         _id: ID!
         name: String!
-        coords: Location!
+        location: Location!
         thirdPartyId: String
         website: String
         type: String
         phone: String
+        country: String
+        adress: String
+        city: String
+        zip: String
     }
     
     type Recommendation {
@@ -46,8 +50,8 @@ export default`
         me: User
         userProfile(email: String, username: String): User
         users: [User]
-        getNearbyRecommendations(loc: String!): [Recommendation]
-        getRestaurants(loc: String!): [Restaurant]
+        getNearbyRecommendations(coords: String!): [Recommendation]
+        getRestaurants(coords: String, name: String): [Restaurant]
         
         getRecommendations: [Recommendation]
     }
