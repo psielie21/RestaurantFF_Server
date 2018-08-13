@@ -1,7 +1,10 @@
 import bodyParser from 'body-parser';
 import jwt from "express-jwt";
+import errorhandler from "errorhandler"
+
 import constants from "./constants"
 import { decodeToken } from "../services/auth"
+
 
 async function auth(req, res, next) {
   try {
@@ -23,4 +26,8 @@ async function auth(req, res, next) {
 export default app => {
   app.use(bodyParser.json());
   app.use(auth);
+  if (process.env.NODE_ENV === 'development') {
+  // only use in development
+    app.use(errorhandler())
+  }
 }

@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 import constants from "./constants";
 
-mongoose.connect(constants.DB_URL);
+mongoose.connect(constants.DB_URL, {useNewUrlParser: true});
 
 mongoose.connection
     .once("open", () => console.log("Running"))

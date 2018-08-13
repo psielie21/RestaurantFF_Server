@@ -15,14 +15,14 @@ export default {
     restaurant: ({restaurant}) => Restaurant.findById(restaurant)
   },
   Restaurant: {
-    /*
-    coords: ({coords}) => {
+    
+    location: ({location}) => {
       return {
-              lat: coords[0].split(", ")[0],
-              lon: coords[0].split(", ")[1],
+              lat: location.coordinates[1],
+              lon: location.coordinates[0],
              }
     }
-    */
+    
   },
   User: {
     recs: async ({recs}) =>  {
@@ -37,8 +37,9 @@ export default {
     me: UserResolver.me,
     userProfile: UserResolver.userProfile,
     users: UserResolver.users,
-    getRecommendations: RecommendationResolver.getRecommendations,
+    getNearbyRecommendations: RecommendationResolver.getNearbyRecommendations,
     getRestaurants: RestaurantResolver.getRestaurants,
+    getRecommendations: RecommendationResolver.getRecommendations
     
   },
   Mutation: {
@@ -46,7 +47,6 @@ export default {
     login: UserResolver.login,
     createRecommendation: RecommendationResolver.createRecommendation,
     deleteRecommendation: RecommendationResolver.deleteRecommendation,
-    deleteUsers: UserResolver.deleteUsers,
     addRestaurant: RestaurantResolver.addRestaurant,
   },
 };

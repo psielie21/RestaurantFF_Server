@@ -67,14 +67,5 @@ export default {
         }
     },
     
-    deleteUsers: async (_, args, {user}) => {
-        await requireAuth(user);
-        try {
-            await User.collection.drop();
-            return User.find({})
-        } catch (err){
-            throw err
-        }
-    }
     
 }

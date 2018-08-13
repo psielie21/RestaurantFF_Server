@@ -6,8 +6,8 @@ export default`
     }
     
     type Location {
-        lat: Int!
-        lon: Int!
+        lat: Float!
+        lon: Float!
     }
     
     type User {
@@ -50,7 +50,7 @@ export default`
         me: User
         userProfile(email: String, username: String): User
         users: [User]
-        getNearbyRecommendations(coords: String!): [Recommendation]
+        getNearbyRecommendations(coords: String, distance: Float): [Recommendation]
         getRestaurants(coords: String, name: String): [Restaurant]
         
         getRecommendations: [Recommendation]
@@ -61,9 +61,8 @@ export default`
         signup(username: String!, password: String!, firstName: String, lastName: String, email: String!, avatar: String): Auth
         createRecommendation(restaurant: ID, body: String, pictures: [String]): Recommendation 
         addRestaurant(name: String!, coords: String!, website: String, type: String, phone: String, country: String, adress: String, city: String, zip: String): Restaurant
-        deleteRecommendation(_id: ID): String
+        deleteRecommendation(_id: ID): Recommendation
         
-        deleteUsers: [User]
     }
     
     schema {
