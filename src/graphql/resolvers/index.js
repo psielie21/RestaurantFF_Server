@@ -21,6 +21,12 @@ export default {
               lat: location.coordinates[1],
               lon: location.coordinates[0],
              }
+    },
+    recommendations: async({recommendations}) => {
+      const results = await Recommendation.find({
+       '_id': { $in: recommendations }
+      })
+      return results;
     }
     
   },

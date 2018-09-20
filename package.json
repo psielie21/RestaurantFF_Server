@@ -32,6 +32,7 @@
     "graphql-date": "^1.0.3",
     "jsonwebtoken": "^8.3.0",
     "mongoose": "^5.2.6",
-    "mongoose-unique-validator": "^2.0.1"
+    "mongoose-unique-validator": "^2.0.1",
+    "query-overpass": "^1.5.3"
   }
 }

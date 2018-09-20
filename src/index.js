@@ -11,6 +11,8 @@ import resolvers from './graphql/resolvers';
 import constants from './config/constants';
 import middlewares from './config/middleware';
 
+import overpass from "./services/overpass";
+
 const app = express();
 
 middlewares(app);
@@ -61,4 +63,5 @@ graphQLServer.listen(constants.PORT, err => {
 server.applyMiddleware( {app} );
 app.listen({ port: constants.PORT}, () => {
     console.log("We listening!")
+    console.log(process.env.NODE_ENV);
 })

@@ -2,6 +2,8 @@ const expect = require("chai").expect,
     supertest = require("supertest"),
     api=supertest("https://restaurant-ff-server-psielie.c9users.io/graphql");
     
+const Recommendation = require("../lib/models/Recommendation");
+const User = require("../lib/models/User");
 const Restaurant = require("../lib/models/Restaurant");
 const constants = require("../lib/config/constants");
 const mongoose = require("mongoose");
@@ -11,10 +13,13 @@ describe("Restaurant", function(){
     let token;
     before(function(done){
         mongoose.connect(constants.default.DB_URL, {useNewUrlParser: true });
-            mongoose.connection.collections['restaurants'].remove({}, function(err) {
-                mongoose.connection.close();
+        mongoose.connection.collections['recommendations'].remove({}, function(err) {
+            mongoose.connection.collections['users'].remove({}, function(err) {
+                mongoose.connection.collections['restaurants'].remove({}, function(err) {
                 done();
+                });
             });
+        });
     });
     
     it('should return a 200 response', function (done) {
@@ -31,7 +36,6 @@ describe("Restaurant", function(){
         api.post("/")
             .set("Accept", "application/json")
             .send({
-                //"query": "mutation{signup(username: \"rest_tester\", password: \"pass\", firstName: \"Testo\", lastName: \"First\", email:\"test1@gmail.com\") {token}}"
                 "query": "mutation{signup("+ _stringify(testObj.user1) +"){token}}"
                 
             })
@@ -63,12 +67,27 @@ describe("Restaurant", function(){
             });
     });
     
-    it("should let the user add a restaurant", function(done){
+    //this test is API dependent so we only require it to not throw an error
+    it("should let the user query nearby restaurants", function(done){
         api.post("/")
             .set("Accept", "application/json")
             .set("Authorization", "Bearer " + token)
             .send({
-                "query": "mutation{ addRestaurant(" + _stringify(testObj.restaurant1) + "){name website phone country adress city zip}}"
+                "query": "query{ getRestaurants(coords: \""+ _stringify(testObj.restaurant1.coords) + "\"){name website phone country adress city zip}}"
+            })
+            .expect(200)
+            .end(function(err, res){
+                expect(err).to.equal(null);
+                done();
+            });
+    })
+    
+    it("should let the user add a restaurant when he cant find his restaurant", function(done){
+        api.post("/")
+            .set("Accept", "application/json")
+            .set("Authorization", "Bearer " + token)
+            .send({
+                "query": "mutation{ addRestaurant(" + _stringify(testObj.restaurant1) + " " + _stringify(testObj.recommendation1) +"){name website phone country adress city zip}}"
             })
             .expect(200)
             .end(function(err, res){
@@ -91,38 +110,27 @@ describe("Restaurant", function(){
             });
     });
     
-    it("should find the added restaurant", function(done){
+    //this test is again API dependent as it could be that restaurant1 is already added to the db and already confirmed
+    it("should find the added restaurant and be marked as unconfirmed", function(done){
         api.post("/")
             .set("Accept", "application/json")
             .set("Authorization", "Bearer "+token)
             .send({
-                "query": "{getRestaurants(coords: \""+ testObj.restaurant1.coords +"\") {name}}"
+                "query": "{getRestaurants(coords: \""+ testObj.restaurant1.coords +"\") {name confirmed}}"
             })
             .expect(200)
             .end(function(err,res){
                 expect(err).to.equal(null);
                 expect(res.body.data.getRestaurants).to.be.an("array");
+                const dataArr = res.body.data.getRestaurants;
+                const target = dataArr.find(function(element){
+                    return element.name == testObj.restaurant1.name;
+                })
+                expect(target.confirmed).to.be.false;
                 done();
             });
     });
     
-    it("should add some more restaurants", function(done){
-        api.post("/")
-            .set("Accept", "application/json")
-            .set("Authorization", "Bearer "+token)
-            .send({
-                "query": "mutation{rest2: addRestaurant(" + _stringify(testObj.restaurant2) + "){name }, rest3: addRestaurant(" + _stringify(testObj.restaurant3) + "){name }, rest4: addRestaurant(" + _stringify(testObj.restaurant4) + "){name }, rest5: addRestaurant(" + _stringify(testObj.restaurant5) + "){name }}"
-            })
-            .expect(200)
-            .end(function(err,res){
-                expect(err).to.equal(null);
-                expect(res.body.data.rest2.name).to.equal(testObj.restaurant2.name);
-                expect(res.body.data.rest3.name).to.equal(testObj.restaurant3.name);
-                expect(res.body.data.rest4.name).to.equal(testObj.restaurant4.name);
-                expect(res.body.data.rest5.name).to.equal(testObj.restaurant5.name);
-                done();
-            });
-    });
     
     it("should find no restaurant", function(done){
         api.post("/")
@@ -140,87 +148,21 @@ describe("Restaurant", function(){
             });
     });
     
-    it("should find exactly one restaurant 1/4", function(done){
-        api.post("/")
-            .set("Accept", "application/json")
-            .set("Authorization", "Bearer "+token)
-            .send({
-                "query": "{getRestaurants(coords: \""+ testObj.rest2_testing.c1 +"\") {name}}"
-            })
-            .expect(200)
-            .end(function(err,res){
-                expect(err).to.equal(null);
-                expect(res.body.data.getRestaurants).to.be.an("array");
-                expect(res.body.data.getRestaurants.length).to.equal(1);
-                expect(res.body.data.getRestaurants[0].name).to.equal(testObj.restaurant2.name);
-                done();
-            });
-    });
-    
-    it("should find exactly one restaurant 2/4", function(done){
-        api.post("/")
-            .set("Accept", "application/json")
-            .set("Authorization", "Bearer "+token)
-            .send({
-                "query": "{getRestaurants(coords: \""+ testObj.rest2_testing.c2 +"\") {name}}"
-            })
-            .expect(200)
-            .end(function(err,res){
-                expect(err).to.equal(null);
-                expect(res.body.data.getRestaurants).to.be.an("array");
-                expect(res.body.data.getRestaurants.length).to.equal(1);
-                expect(res.body.data.getRestaurants[0].name).to.equal(testObj.restaurant2.name);
-                done();
-            });
-    });
-    
-    it("should find exactly one restaurant 3/4", function(done){
-        api.post("/")
-            .set("Accept", "application/json")
-            .set("Authorization", "Bearer "+token)
-            .send({
-                "query": "{getRestaurants(coords: \""+ testObj.rest2_testing.c3 +"\") {name}}"
-            })
-            .expect(200)
-            .end(function(err,res){
-                expect(err).to.equal(null);
-                expect(res.body.data.getRestaurants).to.be.an("array");
-                expect(res.body.data.getRestaurants.length).to.equal(1);
-                expect(res.body.data.getRestaurants[0].name).to.equal(testObj.restaurant2.name);
-                done();
-            });
-    });
-    
-    it("should find exactly one restaurant 4/4", function(done){
-        api.post("/")
-            .set("Accept", "application/json")
-            .set("Authorization", "Bearer "+token)
-            .send({
-                "query": "{getRestaurants(coords: \""+ testObj.rest2_testing.c4 +"\") {name}}"
-            })
-            .expect(200)
-            .end(function(err,res){
-                expect(err).to.equal(null);
-                expect(res.body.data.getRestaurants).to.be.an("array");
-                expect(res.body.data.getRestaurants.length).to.equal(1);
-                expect(res.body.data.getRestaurants[0].name).to.equal(testObj.restaurant2.name);
-                done();
-            });
-    });
     
     it("should find restaurants by name", function(done){
         api.post("/")
             .set("Accept", "application/json")
             .set("Authorization", "Bearer "+token)
             .send({
-                "query": "{getRestaurants(name: \""+ testObj.restaurant3.name +"\") {name}}"
+                "query": "{getRestaurants(name: \""+ testObj.restaurant1.name +"\") {name}}"
             })
             .expect(200)
             .end(function(err,res){
                 expect(err).to.equal(null);
+                expect(res.body.errors).to.equal(undefined);
                 expect(res.body.data.getRestaurants).to.be.an("array");
                 expect(res.body.data.getRestaurants.length).to.equal(1);
-                expect(res.body.data.getRestaurants[0].name).to.equal(testObj.restaurant3.name);
+                expect(res.body.data.getRestaurants[0].name).to.equal(testObj.restaurant1.name);
                 done();
             });
     });
@@ -230,16 +172,47 @@ describe("Restaurant", function(){
             .set("Accept", "application/json")
             .set("Authorization", "Bearer "+token)
             .send({
-                "query": "{getRestaurants(name: \""+ testObj.restaurant3.name.substring(2) +"\") {name}}"
+                "query": "{getRestaurants(name: \""+ testObj.restaurant1.name.substring(2) +"\") {name}}"
             })
             .expect(200)
             .end(function(err,res){
                 expect(err).to.equal(null);
                 expect(res.body.data.getRestaurants).to.be.an("array");
                 expect(res.body.data.getRestaurants.length).to.equal(1);
-                expect(res.body.data.getRestaurants[0].name).to.equal(testObj.restaurant3.name);
+                expect(res.body.data.getRestaurants[0].name).to.equal(testObj.restaurant1.name);
                 done();
             });
+    });
+    
+    it("should find a predefined restaurant like 'Poinger Einkehr' ", function(done){
+        api.post("/")
+            .set("Accept", "application/json")
+            .set("Authorization", "Bearer "+token)
+            .send({
+                "query": "{getRestaurants(coords: \""+ testObj.poinger_einkehr_coords +"\") {name}}"
+            })
+            .expect(200)
+            .end(function(err, res){
+                expect(err).to.equal(null);
+                expect(res.body.data.getRestaurants).to.be.an("array");
+                const dataArr = res.body.data.getRestaurants;
+                const target = dataArr.find(function(element){
+                    return element.name == "Poinger Einkehr"
+                })
+                expect(target.name).to.equal("Poinger Einkehr");
+                done();
+            })
+    })
+    
+    after(function(done){
+        mongoose.connection.collections['recommendations'].remove({}, function(err) {
+            mongoose.connection.collections['users'].remove({}, function(err) {
+                mongoose.connection.collections['restaurants'].remove({}, function(err) {
+                    mongoose.connection.close();
+                    done();
+                });
+            });
+        });
     });
 });
 

@@ -17,6 +17,9 @@ const RecommendationSchema = mongoose.Schema({
     location: {
         type: {type: String},
         coordinates: [Number],
+    },
+    rating: {
+        type: Number
     }
     
 }, {timestamps: true});

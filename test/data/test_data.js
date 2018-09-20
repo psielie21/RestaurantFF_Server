@@ -4,14 +4,14 @@ exports.testObj =  {
             password: "pass", 
             firstName: "Testo", 
             lastName: "First", 
-            email:"test1@gmail.com"
+            email:"test1@gmail.com",
         },
         user2: {
             username: "rec_tester", 
             password: "pass", 
             firstName: "Testo", 
             lastName: "First", 
-            email:"test1@gmail.com"
+            email:"test1@gmail.com",
         },
         restaurant1: {
             name: "Perc place", 
@@ -21,7 +21,7 @@ exports.testObj =  {
             country: "USA", 
             adress: "43 N Main St", 
             city: "Hartford",
-            zip: "53027"
+            zip: "53027",
         },
         restaurant2: {
             name: "Mickeys", 
@@ -31,7 +31,7 @@ exports.testObj =  {
             country: "USA", 
             adress: "675 Grand Ave", 
             city: "Hartford",
-            zip: "53027"
+            zip: "53027",
         },
         restaurant3: {
             name: "Poad´s Pizza", 
@@ -41,7 +41,7 @@ exports.testObj =  {
             country: "USA", 
             adress: "752 Grand Ave", 
             city: "Hartford",
-            zip: "53027"
+            zip: "53027",
         },
         restaurant4: {
             name: "Taco Bell", 
@@ -51,7 +51,7 @@ exports.testObj =  {
             country: "USA", 
             adress: "1516 E Sumner St", 
             city: "Hartford",
-            zip: "53027"
+            zip: "53027",
         },
         restaurant5: {
             name: "Cinders Charcoal Grill", 
@@ -61,11 +61,13 @@ exports.testObj =  {
             country: "USA", 
             adress: "1002 N Main St", 
             city: "Oshkosh",
-            zip: "54901"
+            zip: "54901",
         },
         recommendation1: {
             body: "The blag blag bah",
+            rating: 4,
         },
+        poinger_einkehr_coords: "11.811101, 48.176863",
         random_coords: "-88.494395, 43.918857",
         rest2_testing: {
             c1: "-88.374349, 43.309167",

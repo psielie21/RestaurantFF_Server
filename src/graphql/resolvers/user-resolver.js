@@ -14,9 +14,14 @@ export default {
         }
     },
     
-    login: async (_, {email, password }) => {
+    login: async (_, {emailOrUser, password }) => {
         try {
-            const user = await User.findOne( {email} );
+            let user;
+            if(emailOrUser.indexOf("@") > -1){
+                user = await User.findOne( {email: emailOrUser} );
+            }else {
+                user = await User.findOne( { username: emailOrUser })
+            }
             
             if(!user){
                 throw new Error("User not exist!");

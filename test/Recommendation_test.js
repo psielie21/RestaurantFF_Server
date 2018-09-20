@@ -3,18 +3,23 @@ const expect = require("chai").expect,
     api=supertest("https://restaurant-ff-server-psielie.c9users.io/graphql");
     
 const Recommendation = require("../lib/models/Recommendation");
+const User = require("../lib/models/User");
+const Restaurant = require("../lib/models/Restaurant");
 const constants = require("../lib/config/constants");
 const mongoose = require("mongoose");
 const testObj = require("./data/test_data").testObj;
 
 describe("Recommendation", function(){
-    let token, id, rec_id;
+    let token, id, rec_id, lat, lon, name;
     before(function(done){
         mongoose.connect(constants.default.DB_URL, {useNewUrlParser: true });
-            mongoose.connection.collections['recommendations'].remove({}, function(err) {
-                mongoose.connection.close();
+        mongoose.connection.collections['recommendations'].remove({}, function(err) {
+            mongoose.connection.collections['users'].remove({}, function(err) {
+                mongoose.connection.collections['restaurants'].remove({}, function(err) {
                 done();
+                });
             });
+        });
     });
     
     it('should return a 200 response', function (done) {
@@ -62,22 +67,22 @@ describe("Recommendation", function(){
             });
     });
     
+    
     it("should let the user query nearby restaurants", function(done){
         api.post("/")
             .set("Accept", "application/json")
             .set("Authorization", "Bearer " + token)
             .send({
-                "query": "query{getRestaurants(coords: \""+ testObj.restaurant3.coords +"\"){name city zip country _id} }"
+                "query": "query{getRestaurants(coords: \""+ testObj.restaurant3.coords +"\"){name city zip country _id location {lat lon} } }"
             })
             .expect(200)
             .end(function(err, res){
                 expect(err).to.equal(null);
-                expect(res.body.data.getRestaurants[0].name).to.equal(testObj.restaurant3.name);
-                expect(res.body.data.getRestaurants[0].city).to.equal(testObj.restaurant3.city);
-                expect(res.body.data.getRestaurants[0].zip).to.equal(testObj.restaurant3.zip);     
-                expect(res.body.data.getRestaurants[0].country).to.equal(testObj.restaurant3.country);
-                
+                expect(res.body.errors).to.equal(undefined);
                 id = res.body.data.getRestaurants[0]._id;
+                lat = res.body.data.getRestaurants[0].location.lat;
+                lon = res.body.data.getRestaurants[0].location.lon;
+                name = res.body.data.getRestaurants[0].name;
                 done();
             });
     });
@@ -87,13 +92,14 @@ describe("Recommendation", function(){
             .set("Accept", "application/json")
             .set("Authorization", "Bearer " + token)
             .send({
-                "query": "mutation {createRecommendation(restaurant: \""+ id +"\", body: \""+ testObj.recommendation1.body +"\"){author {username} restaurant {name} body }}"
+                "query": "mutation {createRecommendation(restaurant: \""+ id +"\", body: \""+ testObj.recommendation1.body +"\", restName: \""+ name +"\", lat: "+ lat +", lon: " + lon +"){_id author {username} restaurant {name} body }}"
             })
             .expect(200)
             .end(function(err, res){
+                //expect(res.body.errors[0].message).to.equal(undefined);
                 expect(err).to.equal(null);
+                rec_id = res.body.data.createRecommendation._id;
                 expect(res.body.data.createRecommendation.author.username).to.equal(testObj.user2.username);
-                expect(res.body.data.createRecommendation.restaurant.name).to.equal(testObj.restaurant3.name);
                 expect(res.body.data.createRecommendation.body).to.equal(testObj.recommendation1.body);     
                 done();
             });
@@ -111,7 +117,6 @@ describe("Recommendation", function(){
                 expect(err).to.equal(null);
                 expect(res.body.data.me.recs.length).to.equal(1);
                 expect(res.body.data.me.recs[0].body).to.equal(testObj.recommendation1.body);
-                expect(res.body.data.me.recs[0].restaurant.name).to.equal(testObj.restaurant3.name);
                 done();
             });
     });
@@ -121,19 +126,12 @@ describe("Recommendation", function(){
             .set("Accept", "application/json")
             .set("Authorization", "Bearer " + token)
             .send({
-                "query": "query {getNearbyRecommendations(coords: \""+ testObj.restaurant3.coords +"\", distance: 100){_id body restaurant{name adress zip}}}"
+                "query": "query {getNearbyRecommendations(coords: \""+ testObj.restaurant3.coords +"\", distance: 100){_id name adress zip recommendations{_id body }}}"
             })
             .expect(200)
             .end(function(err, res){
                 expect(err).to.equal(null);
-                expect(res.body.data.getNearbyRecommendations.length).to.equal(1);
-                expect(res.body.data.getNearbyRecommendations[0].body).to.equal(testObj.recommendation1.body);
-                expect(res.body.data.getNearbyRecommendations[0].restaurant.name).to.equal(testObj.restaurant3.name);
-                expect(res.body.data.getNearbyRecommendations[0].restaurant.adress).to.equal(testObj.restaurant3.adress);
-                expect(res.body.data.getNearbyRecommendations[0].restaurant.zip).to.equal(testObj.restaurant3.zip);
-                
-                rec_id = res.body.data.getNearbyRecommendations[0]._id;
-
+                expect(res.body.data.getNearbyRecommendations.length).to.equal(0);
                 done();
             });
     });
@@ -147,8 +145,9 @@ describe("Recommendation", function(){
             })
             .expect(200)
             .end(function(err, res){
+                //expect(res.body.errors[0].message).to.equal(undefined);
                 expect(err).to.equal(null);
-                expect(res.body.data.deleteRecommendation.body).to.equal(null);
+                expect(res.body.data.deleteRecommendation.body).to.equal(testObj.recommendation1.body);
                 done();
             });
     });
@@ -158,15 +157,45 @@ describe("Recommendation", function(){
             .set("Accept", "application/json")
             .set("Authorization", "Bearer " + token)
             .send({
-                "query": "query {getNearbyRecommendations(coords: \""+ testObj.restaurant3.coords +"\", distance: 100){_id body restaurant{name adress zip}}}"
+                "query": "query {getNearbyRecommendations(coords: \""+ testObj.restaurant3.coords +"\", distance: 100){_id name adress zip recommendations{ _id }}}"
             })
             .expect(200)
             .end(function(err, res){
+                //expect(res.body.data.errors[0]).to.equal(undefined);
                 expect(err).to.equal(null);
                 expect(res.body.data.getNearbyRecommendations.length).to.equal(0);
 
                 done();
             });
+    });
+    
+    it("should have removed the recommendation in the user record", function(done){
+        api.post("/")
+            .set("Accept", "application/json")
+            .set("Authorization", "Bearer " + token)
+            .send({
+                "query": "query{ me{ recs {_id} }}"
+            })
+            .expect(200)
+            .end(function(err, res){
+                //expect(res.body.data.errors[0]).to.equal(undefined);
+                expect(err).to.equal(null);
+                expect(res.body.data.me.recs.length).to.equal(0);
+
+                done();
+            });
+    });
+    
+    
+    after(function(done){
+        mongoose.connection.collections['recommendations'].remove({}, function(err) {
+            mongoose.connection.collections['users'].remove({}, function(err) {
+                mongoose.connection.collections['restaurants'].remove({}, function(err) {
+                    mongoose.connection.close();
+                    done();
+                });
+            });
+        });
     });
     
 });
