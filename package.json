@@ -30,9 +30,11 @@
     "geo-distance": "^0.2.0",
     "graphql": "^0.13.2",
     "graphql-date": "^1.0.3",
+    "graphql-upload": "^8.0.0",
     "jsonwebtoken": "^8.3.0",
     "mongoose": "^5.2.6",
     "mongoose-unique-validator": "^2.0.1",
-    "query-overpass": "^1.5.3"
+    "query-overpass": "^1.5.3",
+    "shortid": "^2.2.13"
   }
 }

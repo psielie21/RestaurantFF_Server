@@ -4,19 +4,21 @@ import User from "../../models/User";
 import { requireAuth } from "../../services/auth";
 
 export default {
-    createRecommendation: async (_, {restaurant, body, restName, lat, lon}, {user}) => {
+    createRecommendation: async (_, {restaurant, body, rating, restName, latitude, longitude}, {user}) => {
         const me = await requireAuth(user);
         try {
-            //OpenStreetMap IDs have a length of 10
-            if(restaurant.length == 10){
+            //OpenStreetMap IDs have a length of 10 ... NO THEY DONT
+            //checking if the restaurant id is not in mongodb format
+            if(restaurant.length != 24){
                 //create a restaurant entry in the local db first
-                const newlyCreated = await Restaurant.create({api_id: restaurant, name: restName, location: {type: "Point", coordinates: [lat, lon]} })
+                const newlyCreated = await Restaurant.create({api_id: restaurant, name: restName, location: {type: "Point", coordinates: [longitude, latitude]} })
                 restaurant = newlyCreated._id;
+                console.log(newlyCreated);
             }
             //check if the recommendation is a valid restaurant in the local db
             const found = await Restaurant.findById({_id: restaurant})
             if(found){
-                const rec = await Recommendation.create({body, author: user._id, restaurant, location: {type: "Point", coordinates: [found.location.coordinates[0], found.location.coordinates[1]]}});
+                const rec = await Recommendation.create({body, rating, author: user._id, restaurant, location: {type: "Point", coordinates: [found.location.coordinates[0], found.location.coordinates[1]]}});
                 let recs = me.recs;
                 await recs.push(rec)
                 User.findOneAndUpdate({_id: user._id}, {recs}, function(err, res){
@@ -65,17 +67,6 @@ export default {
           }
          });
         
-        let recs = await Recommendation.find({
-          location: {
-           $nearSphere: {
-            $geometry: {
-             type: "Point",
-             coordinates: [lon, lat]
-            },
-            $maxDistance: distance
-           }
-          }
-         });
 
         return rests;
         }else {

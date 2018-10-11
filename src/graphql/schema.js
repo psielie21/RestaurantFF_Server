@@ -1,13 +1,18 @@
 export default`
     scalar Date
-    
+
     type Auth {
         token: String!
     }
     
+    type Image {
+        data: String
+        contentType: String
+    }
+    
     type Location {
-        lat: Float!
-        lon: Float!
+        latitude: Float!
+        longitude: Float!
     }
     
     type User {
@@ -57,16 +62,18 @@ export default`
         users: [User]
         getNearbyRecommendations(coords: String, distance: Float): [Restaurant]
         getRestaurants(coords: String, name: String): [Restaurant]
-        
+        getLocationBasedRestaurants(coords: String): [Restaurant]
+        getBoxBasedRestaurants(lat1: Float, lon1: Float, lat2: Float, lon2: Float) : [Restaurant]
         getRecommendations: [Recommendation]
     }
     
     type Mutation {
         login(emailOrUser: String!, password: String!): Auth
-        signup(username: String!, password: String!, firstName: String, lastName: String, email: String!, avatar: String): Auth
-        createRecommendation(restaurant: ID, body: String, pictures: [String], restName: String, lat: Float, lon: Float ): Recommendation 
+        signup(username: String!, password: String!, firstName: String, lastName: String, email: String!): Auth
+        createRecommendation(restaurant: ID, body: String, rating: Int!, pictures: [String], restName: String, latitude: Float, longitude: Float ): Recommendation 
         addRestaurant(name: String!, coords: String, website: String, type: String, phone: String, country: String, adress: String, city: String, zip: String, body: String!, rating: Int!,): Restaurant
         deleteRecommendation(_id: ID): Recommendation
+        updateMe(profilePicture: Upload): User
         
     }
     

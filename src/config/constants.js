@@ -3,4 +3,6 @@ export default {
   DB_URL: "mongodb://localhost:27017/rffserver",
   GRAPHQL_PATH: "/graphql",
   JWT_SECRET: "thisisasecret",
+  MAX_LATITUDE_DELTA: 0.02,
+  MAX_LONGITUDE_DELTA: 0.03,
 }

@@ -1,4 +1,6 @@
 import GraphQLDate from 'graphql-date';
+import { GraphQLUpload } from 'graphql-upload'
+
 
 import UserResolver from './user-resolver';
 import RecommendationResolver from "./recommendation-resolver"
@@ -10,6 +12,7 @@ import Recommendation from "../../models/Recommendation";
 
 export default {
   Date: GraphQLDate,
+  //Upload: GraphQLUpload,
   Recommendation: {
     author: ({author}) => User.findById(author),
     restaurant: ({restaurant}) => Restaurant.findById(restaurant)
@@ -18,8 +21,8 @@ export default {
     
     location: ({location}) => {
       return {
-              lat: location.coordinates[1],
-              lon: location.coordinates[0],
+              latitude: location.coordinates[1],
+              longitude: location.coordinates[0],
              }
     },
     recommendations: async({recommendations}) => {
@@ -45,7 +48,9 @@ export default {
     users: UserResolver.users,
     getNearbyRecommendations: RecommendationResolver.getNearbyRecommendations,
     getRestaurants: RestaurantResolver.getRestaurants,
-    getRecommendations: RecommendationResolver.getRecommendations
+    getRecommendations: RecommendationResolver.getRecommendations,
+    getLocationBasedRestaurants: RestaurantResolver.getLocationBasedRestaurants,
+    getBoxBasedRestaurants: RestaurantResolver.getBoxBasedRestaurants,
     
   },
   Mutation: {
@@ -54,5 +59,6 @@ export default {
     createRecommendation: RecommendationResolver.createRecommendation,
     deleteRecommendation: RecommendationResolver.deleteRecommendation,
     addRestaurant: RestaurantResolver.addRestaurant,
+    updateMe: UserResolver.updateMe,
   },
 };

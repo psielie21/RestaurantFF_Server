@@ -1,5 +1,7 @@
 import User from "../../models/User";
 import { requireAuth } from "../../services/auth";
+import { createWriteStream, readFileSync } from 'fs'
+import shortid from 'shortid'
 
 export default {
     signup: async (_, {...rest}) => {
@@ -62,6 +64,20 @@ export default {
         }
     },
     
+    updateMe: async (_, { profilePicture }, {user}) => {
+        const me = await requireAuth(user);
+        try {
+            const { filename, mimetype, stream } = await profilePicture
+            const { id, path } =await storeUpload(stream);
+            const newMe = await User.findOneAndUpdate({ _id: me._id }, { avatar: path });
+            console.log(newMe);
+            return newMe;
+        } catch(err) {
+            console.log(err);
+            throw err;
+        }
+    },
+    
     users: async (_, args, {user}) => {
         await requireAuth(user);
         try {
@@ -71,6 +87,16 @@ export default {
             throw err
         }
     },
+}
+
+const storeUpload = async(stream) =>{
+    const id = shortid.generate();
+    const path = `static/${id}.jpg`
     
-    
+    return new Promise((resolve, reject) =>
+    stream
+      .pipe(createWriteStream(path))
+      .on('finish', () => resolve({ id, path }))
+      .on('error', reject),
+    )
 }

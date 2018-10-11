@@ -15,6 +15,9 @@ import overpass from "./services/overpass";
 
 const app = express();
 
+//const oneFolderUp = __dirname.substring()
+app.use('/static', express.static("/home/ubuntu/workspace" + '/static'));
+
 middlewares(app);
 const server = new ApolloServer({
     typeDefs,

@@ -7,10 +7,14 @@ const User = require("../lib/models/User");
 const Restaurant = require("../lib/models/Restaurant");
 const constants = require("../lib/config/constants");
 const mongoose = require("mongoose");
-const testObj = require("./data/test_data").testObj;
+
+const testUsers = require("./data/test_data").testUsers;
+const testRecommendations = require("./data/test_data").testRecommendations;
+const testRestaurants = require("./data/test_data").testRestaurants;
+
 
 describe("Recommendation", function(){
-    let token, id, rec_id, lat, lon, name;
+    let token, id, rec_id, latitude, longitude, name, length;
     before(function(done){
         mongoose.connect(constants.default.DB_URL, {useNewUrlParser: true });
         mongoose.connection.collections['recommendations'].remove({}, function(err) {
@@ -36,7 +40,7 @@ describe("Recommendation", function(){
         api.post("/")
             .set("Accept", "application/json")
             .send({
-                "query": "mutation{signup("+ _stringify(testObj.user2) +"){token}}"
+                "query": "mutation{signup("+ _stringify(testUsers.user2) +"){token}}"
                 
             })
             .expect(200)
@@ -59,10 +63,10 @@ describe("Recommendation", function(){
             .expect(200)
             .end(function(err,res){
                 expect(err).to.be.a("null");
-                expect(res.body.data.me.username).to.equal(testObj.user2.username);
-                expect(res.body.data.me.firstName).to.equal(testObj.user2.firstName);
-                expect(res.body.data.me.lastName).to.equal(testObj.user2.lastName);
-                expect(res.body.data.me.email).to.equal(testObj.user2.email);
+                expect(res.body.data.me.username).to.equal(testUsers.user2.username);
+                expect(res.body.data.me.firstName).to.equal(testUsers.user2.firstName);
+                expect(res.body.data.me.lastName).to.equal(testUsers.user2.lastName);
+                expect(res.body.data.me.email).to.equal(testUsers.user2.email);
                 done();
             });
     });
@@ -73,16 +77,17 @@ describe("Recommendation", function(){
             .set("Accept", "application/json")
             .set("Authorization", "Bearer " + token)
             .send({
-                "query": "query{getRestaurants(coords: \""+ testObj.restaurant3.coords +"\"){name city zip country _id location {lat lon} } }"
+                "query": "query{getRestaurants(coords: \""+ testRestaurants.restaurant3.coords +"\"){name city zip country _id location {latitude longitude} } }"
             })
             .expect(200)
             .end(function(err, res){
                 expect(err).to.equal(null);
                 expect(res.body.errors).to.equal(undefined);
                 id = res.body.data.getRestaurants[0]._id;
-                lat = res.body.data.getRestaurants[0].location.lat;
-                lon = res.body.data.getRestaurants[0].location.lon;
+                latitude = res.body.data.getRestaurants[0].location.latitude;
+                longitude = res.body.data.getRestaurants[0].location.longitude;
                 name = res.body.data.getRestaurants[0].name;
+                length = res.body.data.getRestaurants.length;
                 done();
             });
     });
@@ -92,15 +97,15 @@ describe("Recommendation", function(){
             .set("Accept", "application/json")
             .set("Authorization", "Bearer " + token)
             .send({
-                "query": "mutation {createRecommendation(restaurant: \""+ id +"\", body: \""+ testObj.recommendation1.body +"\", restName: \""+ name +"\", lat: "+ lat +", lon: " + lon +"){_id author {username} restaurant {name} body }}"
+                "query": "mutation {createRecommendation(restaurant: \""+ id +"\", body: \""+ testRecommendations.recommendation1.body +"\", rating: " + testRecommendations.recommendation1.rating +", restName: \""+ name +"\", latitude: "+ latitude +", longitude: " + longitude +"){_id author {username} restaurant {name} body }}"
             })
             .expect(200)
             .end(function(err, res){
                 //expect(res.body.errors[0].message).to.equal(undefined);
                 expect(err).to.equal(null);
                 rec_id = res.body.data.createRecommendation._id;
-                expect(res.body.data.createRecommendation.author.username).to.equal(testObj.user2.username);
-                expect(res.body.data.createRecommendation.body).to.equal(testObj.recommendation1.body);     
+                expect(res.body.data.createRecommendation.author.username).to.equal(testUsers.user2.username);
+                expect(res.body.data.createRecommendation.body).to.equal(testRecommendations.recommendation1.body);     
                 done();
             });
     });
@@ -116,7 +121,7 @@ describe("Recommendation", function(){
             .end(function(err, res){
                 expect(err).to.equal(null);
                 expect(res.body.data.me.recs.length).to.equal(1);
-                expect(res.body.data.me.recs[0].body).to.equal(testObj.recommendation1.body);
+                expect(res.body.data.me.recs[0].body).to.equal(testRecommendations.recommendation1.body);
                 done();
             });
     });
@@ -126,15 +131,30 @@ describe("Recommendation", function(){
             .set("Accept", "application/json")
             .set("Authorization", "Bearer " + token)
             .send({
-                "query": "query {getNearbyRecommendations(coords: \""+ testObj.restaurant3.coords +"\", distance: 100){_id name adress zip recommendations{_id body }}}"
+                "query": "query {getNearbyRecommendations(coords: \""+ longitude + ", " + latitude +"\", distance: 100){_id name adress zip recommendations{_id body }}}"
             })
             .expect(200)
             .end(function(err, res){
                 expect(err).to.equal(null);
-                expect(res.body.data.getNearbyRecommendations.length).to.equal(0);
+                expect(res.body.data.getNearbyRecommendations.length).to.equal(1);
                 done();
             });
     });
+    
+    it("should show the user all nearby restaurants but NOT include his added restaurant twice", function(done) {
+        api.post("/")
+            .set("Accept", "application/json")
+            .set("Authorization", "Bearer " + token)
+            .send({
+                "query": "{getRestaurants(coords: \""+ testRestaurants.restaurant3.coords +"\") {_id name}}"
+            })
+            .expect(200)
+            .end(function(err, res){
+                expect(err).to.equal(null);
+                expect(res.body.data.getRestaurants.length).to.equal(length);
+                done();
+            });
+    })
     
     it("should let the user delete the recommendation", function(done){
         api.post("/")
@@ -147,7 +167,7 @@ describe("Recommendation", function(){
             .end(function(err, res){
                 //expect(res.body.errors[0].message).to.equal(undefined);
                 expect(err).to.equal(null);
-                expect(res.body.data.deleteRecommendation.body).to.equal(testObj.recommendation1.body);
+                expect(res.body.data.deleteRecommendation.body).to.equal(testRecommendations.recommendation1.body);
                 done();
             });
     });
@@ -157,7 +177,7 @@ describe("Recommendation", function(){
             .set("Accept", "application/json")
             .set("Authorization", "Bearer " + token)
             .send({
-                "query": "query {getNearbyRecommendations(coords: \""+ testObj.restaurant3.coords +"\", distance: 100){_id name adress zip recommendations{ _id }}}"
+                "query": "query {getNearbyRecommendations(coords: \""+ testRestaurants.restaurant3.coords +"\", distance: 100){_id name adress zip recommendations{ _id }}}"
             })
             .expect(200)
             .end(function(err, res){

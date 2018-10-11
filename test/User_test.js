@@ -8,7 +8,9 @@ const User = require("../lib/models/User");
 const Restaurant = require("../lib/models/Restaurant");
 const constants = require("../lib/config/constants");
 const mongoose = require("mongoose");
-const testObj = require("./data/test_data").testObj;
+
+const testUsers = require("./data/test_data").testUsers;
+
 
 describe("User", function(){
     
@@ -56,7 +58,7 @@ describe("User", function(){
                 .set('Accept', 'application/json')
                 .set("Authorization", "Bearer " + unvalidToken)
                 .send({
-                    "query": "{me{username}}"
+                    "query": "query{me{username}}"
                 })
                 .expect(200, done);
         });
@@ -82,7 +84,7 @@ describe("User", function(){
             api.post('/')
                 .set('Accept', 'application/json')
                 .send({
-                    "query": "mutation{test1: signup("+ _stringify(testObj.user1) +") {token}}"
+                    "query": "mutation{test1: signup("+ _stringify(testUsers.user1) +") {token}}"
                 })
                 .expect(200)
                 .end(function(err,res){
@@ -109,7 +111,7 @@ describe("User", function(){
             api.post('/')
                 .set('Accept', 'application/json')
                 .send({
-                    "query": "mutation{signup("+ _stringify(testObj.user1) +") {token}}"
+                    "query": "mutation{signup("+ _stringify(testUsers.user1) +") {token}}"
                 })
                 .expect(200)
                 .end(function(err,res){
@@ -118,6 +120,39 @@ describe("User", function(){
                     done();
                 });
         });
+    });
+    
+    describe("Login action", function(){
+        let token = "";
+       it("should let the previously registered user log in again", function(done){
+           api.post('/')
+                .set('Accept', 'application/json')
+                .send({
+                    "query": "mutation{login(emailOrUser: \"" + testUsers.user1.username + "\", password: \"" + testUsers.user1.password + "\") {token}}"
+                })
+                .expect(200)
+                .end(function(err,res){
+                    expect(res.body.data.login.token).to.be.a("string");
+                    token = res.body.data.login.token;
+                    done();
+                });
+       });
+       
+       it("should query the users username", function(done){
+           api.post("/")
+                .set("Accept", "application/json")
+                .send({
+                    "query": "query{me{username}}"
+                })
+                .set("Authorization", "Bearer " + token)
+                .expect(200)
+                .end(function(err,res){
+                    expect(res.body.data.me.username).to.equal(testUsers.user1.username);
+                    done();
+                })
+       })
+
+       
     });
     
     after(function(done){

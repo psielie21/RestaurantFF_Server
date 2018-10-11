@@ -10,7 +10,10 @@ const UserSchema = mongoose.Schema({
         type: String,
         unique: true,
         dropDups: true,
-        required: true
+        required: true,
+        lowercase: true,
+        match: [/^[a-zA-Z0-9_]+$/, 'is invalid'],
+        index: true,
     },
     password: {
         type: String,
@@ -20,7 +23,10 @@ const UserSchema = mongoose.Schema({
     lastName: String,
     email: {
         type: String,
-        required: true
+        unique: true,
+        required: true,
+        match: [/\S+@\S+\.\S+/, 'is invalid'], 
+        index: true
         },
     avatar: String,
     recs: [{
