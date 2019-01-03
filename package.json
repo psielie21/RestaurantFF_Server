@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "The server for the RestaurantFF application",
   "scripts": {
+    "start": "babel src -d lib && node lib/index",
     "build": "babel src -d lib && node lib/index",
     "setup-db": "mongod --bind_ip=$IP --nojournal",
     "repair-db": "mongod --bind_ip=$IP --nojournal --repair",
