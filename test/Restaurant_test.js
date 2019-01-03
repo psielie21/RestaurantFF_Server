@@ -170,39 +170,61 @@ describe("Restaurant", function(){
             });
     });
     
+    describe("getLocationBasedRestaurants", function(done){
+        
+        it("should query a box on the map", function(done){
+            api.post("/")
+                .set("Accept", "application/json")
+                .set("Authorization", "Bearer " + token)
+                .send({
+                    "query": "{getBoxBasedRestaurants(lat1: 48.124456, lon1:  11.617010, lat2: 48.134456, lon2:  11.627010,) {name}}" 
+                })
+                .expect(200)
+                .end(function(err, res){
+                    expect(err).to.equal(null);
+                    expect(res.body.data.getBoxBasedRestaurants).to.be.an("array");
+                    expect(res.body.data.getBoxBasedRestaurants.length).to.not.be.undefined;
+                    done();
+                })
+        })
+    
+        it("should throw an error when the search box is too large", function(done){
+            api.post("/")
+                .set("Accept", "application/json")
+                .set("Authorization", "Bearer " + token)
+                .send({
+                    "query": "{getBoxBasedRestaurants(lat1: 48.124456, lon1:  11.617010, lat2: 48.164456, lon2:  11.647010,) {name}}" 
+                })
+                .expect(200)
+                .end(function(err, res){
+                    expect(err).to.equal(null);
+                    expect(res.body.data.getBoxBasedRestaurants).to.equal(null);
+                    expect(res.body.errors[0].message).to.be.a("string");
+                    done();
+                });
+        });
+            
+        it("should precisely search when the box is maximal", function(done){
+            api.post("/")
+                .set("Accept", "application/json")
+                .set("Authorization", "Bearer " + token)
+                .send({
+                    "query": "{getBoxBasedRestaurants(lat1: 48.124456, lon1:  11.614010, lat2: 48.144456, lon2:  11.617010,) {name}}" 
+                })
+                .expect(200)
+                .end(function(err, res){
+                    expect(err).to.equal(null);
+                    expect(res.body.data.getBoxBasedRestaurants).to.be.an("array");
+                    expect(res.body.data.getBoxBasedRestaurants.length).to.not.be.undefined;
+                    done();
+                });
+        })
     
     
-    it("should query a box on the map", function(done){
-        api.post("/")
-            .set("Accept", "application/json")
-            .set("Authorization", "Bearer " + token)
-            .send({
-                "query": "{getBoxBasedRestaurants(lat1: 48.124456, lon1:  11.617010, lat2: 48.134456, lon2:  11.627010,) {name}}" 
-            })
-            .expect(200)
-            .end(function(err, res){
-                expect(err).to.equal(null);
-                expect(res.body.data.getBoxBasedRestaurants).to.be.an("array");
-                expect(res.body.data.getBoxBasedRestaurants.length).to.not.be.undefined;
-                done();
-            })
     })
     
-    it("should throw an error when the search box is too large", function(done){
-        api.post("/")
-            .set("Accept", "application/json")
-            .set("Authorization", "Bearer " + token)
-            .send({
-                "query": "{getBoxBasedRestaurants(lat1: 48.124456, lon1:  11.617010, lat2: 48.164456, lon2:  11.647010,) {name}}" 
-            })
-            .expect(200)
-            .end(function(err, res){
-                expect(err).to.equal(null);
-                expect(res.body.data.getBoxBasedRestaurants).to.equal(null);
-                expect(res.body.errors[0].message).to.be.a("string");
-                done();
-            })
-    })
+    
+    
     
     after(function(done){
         mongoose.connection.collections['recommendations'].remove({}, function(err) {

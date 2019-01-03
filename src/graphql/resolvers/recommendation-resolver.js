@@ -13,7 +13,7 @@ export default {
                 //create a restaurant entry in the local db first
                 const newlyCreated = await Restaurant.create({api_id: restaurant, name: restName, location: {type: "Point", coordinates: [longitude, latitude]} })
                 restaurant = newlyCreated._id;
-                console.log(newlyCreated);
+                //console.log(newlyCreated);
             }
             //check if the recommendation is a valid restaurant in the local db
             const found = await Restaurant.findById({_id: restaurant})
@@ -82,10 +82,10 @@ export default {
                 await Recommendation.deleteOne({_id});
                 let recs = me.recs;
                 const newRecs = recs.filter( el => el._id != _id)
-                console.log(newRecs);
+                //console.log(newRecs);
                 User.findOneAndUpdate({_id: user._id}, {recs: newRecs}, function(err, res){
                     if(err) console.error(err);
-                    console.log(res);
+                    //console.log(res);
                 })
                 
                 const found = await Restaurant.findById({_id: rec.restaurant});

@@ -83,12 +83,17 @@ export default {
             lon: lon1 + delta.lonDelta/2,
             lat: lat1 + delta.latDelta/2,
         };
-        const radius = GeoDistance.between({lat: lat1, lon: lon1},
-                                            {lat: lat2, lon: lon2}).human_readable().distance;
+        const distance = GeoDistance.between({lat: lat1, lon: lon1},
+                                            {lat: lat2, lon: lon2}).human_readable();
+        const radius = distance.unit === "m" ? distance.distance : distance.distance * 1000;
+
                                             
         if(delta.latDelta > constants.MAX_LATITUDE_DELTA || delta.lonDelta > constants.MAX_LONGITUDE_DELTA){
+            console.log("LatDelta: " + delta.latDelta);
             throw new Error("Specified search box too large!");
         }
+        
+        console.log("Radius: " + radius + ". Center: " + newCenter);
         
         let overpassPromise = new Promise(
                 (resolve, reject) => {
@@ -114,7 +119,6 @@ export default {
                       }
                      }, function(err, data){
                          if(err) reject(err);
-                         console.log(data);
                          resolve(data);
                      })
                 }    
@@ -124,6 +128,7 @@ export default {
         .then(values => {
             let overpassArray = values[0];
             let localArray = values[1];
+            //console.log("LocalArray: " + localArray);
             
             //filter the overpassArray so it doesnt contain duplicate elements
             for(let i = 0; i < localArray.length; i++){

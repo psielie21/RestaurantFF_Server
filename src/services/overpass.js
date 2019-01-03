@@ -16,25 +16,28 @@ export default function(currLon, currLat, cb){
     >;
     out skel qt;`
     
+
+    
     
     let now = Date.now();
     overpass(GET_NEARBY_RESTAURANTS, function(err, data){
         if (err) throw err;
         let difference = Date.now() - now;
-        console.log("Time taken for querying restaurants: " + difference)
+        //console.log("Time taken for querying restaurants: " + difference)
         cb(err, convertOpenMaps(data["features"]))
         
     })
 }
 
 function queryBox(coords, cb){
-    let lat1, lon1, lat2, lon2; 
+    let lat1, lat2, lon1, lon2;
     try {
          ({ lat1, lon1, lat2, lon2 } = coords);
     }catch (e){
         throw new Error("Coords not valid!");
         return;
     }
+    
     
     const GET_NEARBY_RESTAURANTS = `(
       node(${lat1}, ${lon1}, ${lat2}, ${lon2})["amenity" = "cafe"];
@@ -44,9 +47,9 @@ function queryBox(coords, cb){
     out body;
     >;
     out skel qt;`
-    //console.log(GET_NEARBY_RESTAURANTS);
 
     let now = Date.now();
+    //console.log(GET_NEARBY_RESTAURANTS);
     overpass(GET_NEARBY_RESTAURANTS, function(err, data){
         if (err){
             console.log(err.message);
@@ -54,7 +57,7 @@ function queryBox(coords, cb){
         }
         
         let difference = Date.now() - now;
-        console.log(difference)
+        //console.log(difference)
         try {
             const feat = data["features"]
             cb(err, convertOpenMaps(data["features"]))

@@ -2,6 +2,7 @@ import User from "../../models/User";
 import { requireAuth } from "../../services/auth";
 import { createWriteStream, readFileSync } from 'fs'
 import shortid from 'shortid'
+import fs from "fs";
 
 export default {
     signup: async (_, {...rest}) => {
@@ -68,8 +69,10 @@ export default {
         const me = await requireAuth(user);
         try {
             const { filename, mimetype, stream } = await profilePicture
-            const { id, path } =await storeUpload(stream);
-            const newMe = await User.findOneAndUpdate({ _id: me._id }, { avatar: path });
+            const { id, path } =await storeUpload(stream, me.username);
+            console.log(path)
+            const pathInDb = "https://restaurant-ff-server-psielie.c9users.io/" + path;
+            const newMe = await User.findOneAndUpdate({ _id: me._id }, { avatar: pathInDb });
             console.log(newMe);
             return newMe;
         } catch(err) {
@@ -89,9 +92,16 @@ export default {
     },
 }
 
-const storeUpload = async(stream) =>{
+const storeUpload = async(stream, username) =>{
+    //check if the user has an asset folder already
+    try {
+        fs.mkdirSync(`static/${username}`)
+    } catch (err) {
+        if (err.code !== 'EEXIST') throw err
+    }
+    
     const id = shortid.generate();
-    const path = `static/${id}.jpg`
+    const path = `static/${username}/${id}.jpg`
     
     return new Promise((resolve, reject) =>
     stream

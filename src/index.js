@@ -22,6 +22,10 @@ middlewares(app);
 const server = new ApolloServer({
     typeDefs,
     resolvers,
+    formatError: error => {
+      //console.log(error);  //we have a stream of all outgoing errors here !!!
+      return(error);
+    },
     context: ({ req }) => ({
         user: req.user
      }),
